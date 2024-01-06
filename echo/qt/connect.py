@@ -602,7 +602,7 @@ class connect_datetime(BaseConnection):
         if value is None:
             value = np.datetime64('now')
         ms = int(value.astype(np.timedelta64) / np.timedelta64(1, 'ms'))
-        qvalue = QDateTime.fromMSecsSinceEpoch(ms)
+        qvalue = QDateTime.fromMSecsSinceEpoch(ms, Qt.TimeSpec.UTC)
         self._widget.setDateTime(qvalue)
 
     def connect(self):
