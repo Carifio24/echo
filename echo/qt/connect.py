@@ -1,7 +1,7 @@
 # The functions in this module are used to connect callback properties to Qt
 # widgets.
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import math
 
 from qtpy import QtGui, QtWidgets
@@ -595,7 +595,9 @@ class connect_datetime(BaseConnection):
         self.connect()
 
     def update_prop(self):
-        value = np.datetime64(self._widget.dateTime().toPython())
+        qdatetime = self._widget.dateTime()
+        value = np.datetime64(qdatetime.toPython()) + \
+                np.timedelta64(qdatetime.timeZone().offsetFromUtc(qdatetime), 's')
         setattr(self._instance, self._prop, value)
 
     def update_widget(self, value):
@@ -605,8 +607,12 @@ class connect_datetime(BaseConnection):
 
         # datetime64::item can return a date
         # If this happens, create a datetime object with the time set to midnight
-        if isinstance(dt, date):
+        # (datetime is a subclass of date so we need to check this way)
+        if not isinstance(dt, datetime):
             dt = datetime.combine(dt, datetime.min.time())
+
+        qdatetime = self._widget.dateTime()
+        dt -= timedelta(seconds=qdatetime.timeZone().offsetFromUtc(qdatetime))
         self._widget.setDateTime(dt)
 
     def connect(self):
